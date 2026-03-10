@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pro Book Manager</title>
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>📚 Book Inventory</h1>
+      <p>Manage your collection with ease</p>
+    </header>
+    
+    <div id="statusMessage" class="status-message"></div>
+    
+    <form id="bookForm">
+      <div class="input-group">
+        <input type="text" id="title" placeholder="Book Title" required>
+        <input type="text" id="author" placeholder="Author Name" required>
+      </div>
+      <button type="submit" class="btn-add">Add to Collection</button>
+    </form>
+
+    <div class="list-header">
+      <h2>Your Books</h2>
+      <button id="printBtn" class="btn-print">🖨️ Print List</button>
+    </div>
+
+    <ul id="bookList"></ul>
+  </div>
+
+  <script src="index.js"></script>
+</body>
+</html>
