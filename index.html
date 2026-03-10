@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DBHOND Cloud | Secure Docs & Registry</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Space+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root {
+      --primary: #00f2fe;
+      --success: #00ff88;
+      --error: #ff4d4d;
+      --bg: #050505;
+      --glass: rgba(255, 255, 255, 0.05);
+      --border: rgba(0, 242, 254, 0.2);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      background: var(--bg); 
+      color: #fff; 
+      font-family: 'Poppins', sans-serif; 
+      overflow-x: hidden;
+      background-image: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+      background-size: 100% 2px, 3px 100%;
+    }
+
+    /* --- Success Message Popup --- */
+    .success-popup {
+      position: fixed; top: 20px; right: 20px; padding: 15px 25px;
+      background: var(--success); color: #000; border-radius: 10px;
+      font-weight: bold; transform: translateX(150%); transition: 0.5s;
+      z-index: 10001; display: flex; align-items: center; gap: 10px;
+      box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+    }
+
+    /* --- Auth Section --- */
+    #auth-page { height: 100vh; display: flex; justify-content: center; align-items: center; }
+    .card {
+      background: var(--glass); padding: 35px; border-radius: 25px;
+      border: 1px solid var(--border); width: 420px; text-align: center;
+      backdrop-filter: blur(15px); box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .profile-img {
+      width: 90px; height: 90px; border-radius: 50%; border: 2px solid var(--primary);
+      margin-bottom: 20px; object-fit: cover; box-shadow: 0 0 15px var(--primary);
+    }
+
+    .input-box { position: relative; margin-bottom: 18px; text-align: left; }
+    .input-box i { position: absolute; left: 15px; top: 40px; color: var(--primary); }
+    
+    input, textarea {
+      width: 100%; padding: 12px 15px 12px 45px; background: rgba(0,0,0,0.6);
+      border: 1px solid #333; color: #fff; border-radius: 10px; outline: none;
+      font-family: inherit;
+    }
+
+    .meter-box { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+    .meter { height: 6px; flex-grow: 1; background: #222; border-radius: 3px; overflow: hidden; }
+    #bar { height: 100%; width: 0%; transition: 0.4s; }
+
+    .btn-submit {
+      width: 100%; padding: 15px; background: #222; color: #555; border: none;
+      border-radius: 10px; font-weight: bold; cursor: not-allowed; transition: 0.3s;
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+    .btn-submit.active { background: var(--primary); color: #000; cursor: pointer; box-shadow: 0 0 15px var(--primary); }
+
+    /* --- Dashboard --- */
+    #dashboard { display: none; padding: 40px; max-width: 1200px; margin: auto; }
+    .grid-container { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 30px; margin-top: 30px; }
+    .doc-section { background: var(--glass); padding: 25px; border-radius: 20px; border: 1px solid #333; height: fit-content; }
+    
+    textarea { padding: 15px; height: 150px; resize: none; margin-bottom: 15px; border-left: 4px solid var(--primary); }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { text-align: left; padding: 12px; border-bottom: 1px solid #222; font-size: 13px; }
+    
+    .vault-list { margin-top: 20px; border-top: 1px solid #333; padding-top: 20px; }
+    .vault-item { background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; font-family: 'Space Mono', monospace; font-size: 12px; }
+
+    /* Animations */
+    .new-row { animation: pulseGreen 2s infinite; }
+    @keyframes pulseGreen { 0% { background: rgba(0, 255, 136, 0); } 50% { background: rgba(0, 255, 136, 0.1); } 100% { background: rgba(0, 255, 136, 0); } }
+
+    #sync-overlay { position: fixed; inset: 0; background: #000; z-index: 999; display: none; flex-direction: column; justify-content: center; align-items: center; }
+  </style>
+</head>
+<body>
+
+  <div id="successMsg" class="success-popup">
+    <i class="fas fa-check-circle"></i>
+    <span id="popupText">Action Successful!</span>
+  </div>
+
+  <div id="sync-overlay">
+    <i class="fas fa-shield-check" style="font-size: 4rem; color: var(--primary); animation: pulse 1s infinite;"></i>
+    <h2 style="margin-top: 20px; letter-spacing: 4px;">VERIFYING BIOMETRICS...</h2>
+  </div>
+
+  <section id="auth-page">
+    <div class="card">
+      <img src="b.jpeg" alt="DBHOND LOGO" class="profile-img">
+      <h2 style="margin-bottom: 25px;"><i class="fas fa-terminal"></i> DBHOND CLOUD</h2>
+      <form id="regForm">
+        <div class="input-box">
+          <label style="font-size: 11px;">IDENTITY NAME</label>
+          <i class="fas fa-user-ninja"></i>
+          <input type="text" id="uName" placeholder="Cipher_User" required>
+        </div>
+        <div class="input-box">
+          <label style="font-size: 11px;">ENCRYPTED EMAIL</label>
+          <i class="fas fa-envelope"></i>
+          <input type="email" id="uEmail" placeholder="access@dbhond.com" required>
+        </div>
+        <div class="input-box">
+          <label style="font-size: 11px;">SECURITY KEY</label>
+          <i class="fas fa-key"></i>
+          <input type="password" id="uPass" placeholder="••••••••" required>
+          <div class="meter-box">
+            <i class="fas fa-lock" id="lockIcon"></i>
+            <div class="meter"><div id="bar"></div></div>
+          </div>
+          <p id="msg" style="font-size: 10px; margin-top:5px; color:var(--error)">Firewall status: Locked</p>
+        </div>
+        <button type="submit" class="btn-submit" id="subBtn" disabled>INITIALIZE ACCESS</button>
+      </form>
+    </div>
+  </section>
+
+  <main id="dashboard">
+    <header style="display:flex; justify-content: space-between; align-items:center; border-bottom: 1px solid #333; padding-bottom: 20px;">
+        <div>
+            <h2 id="welcome" style="color:var(--primary); text-transform: uppercase;">System Offline</h2>
+            <div style="display: flex; gap: 15px; margin-top: 5px;">
+              <p id="date-display" style="font-size: 12px; color: var(--success); font-family: 'Space Mono', monospace;"></p>
+              <p id="timestamp" style="font-size: 12px; color: #aaa; font-family: 'Space Mono', monospace;"></p>
+            </div>
+        </div>
+        <button onclick="location.reload()" style="background:none; border:1px solid var(--error); color:var(--error); padding:8px 20px; border-radius: 5px; cursor:pointer;">PURGE SESSION</button>
+    </header>
+
+    <div class="grid-container">
+      <div class="doc-section">
+        <h3><i class="fas fa-file-shield"></i> Secure Data Input</h3>
+        <textarea id="noteArea" placeholder="Enter sensitive intelligence here..."></textarea>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="saveNote()" class="btn-submit active" style="flex:2">ENCRYPT & VAULT</button>
+            <button onclick="window.print()" class="btn-submit active" style="background: #eee; color: #000; flex:1">PRINT</button>
+        </div>
+
+        <div class="vault-list" id="vaultList">
+            <h4 style="font-size: 12px; color: #888; margin-bottom: 10px;">RECENTLY VAULTED</h4>
+        </div>
+      </div>
+
+      <div class="doc-section">
+        <h3><i class="fas fa-network-wired"></i> Network Registry</h3>
+        <table>
+          <thead>
+            <tr><th>OPERATOR</th><th>CLEARANCE</th><th>STATUS</th></tr>
+          </thead>
+          <tbody id="userTable">
+          </tbody>
+        </table>
+        <p style="font-size: 10px; margin-top: 20px; color: #555;">All connections are tunneled through DBHOND AES-256 Protocol.</p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const pass = document.getElementById('uPass');
+    const bar = document.getElementById('bar');
+    const msg = document.getElementById('msg');
+    const btn = document.getElementById('subBtn');
+    const lockIcon = document.getElementById('lockIcon');
+
+    // Live Clock and Date Engine
+    function updateClock() {
+        const now = new Date();
+        
+        // Format Date: DAY, MONTH DD, YYYY
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('date-display').innerText = "DATE: " + now.toLocaleDateString(undefined, options).toUpperCase();
+        
+        // Format Time: HH:MM:SS
+        document.getElementById('timestamp').innerText = "TIME: " + now.toLocaleTimeString();
+    }
+    
+    setInterval(updateClock, 1000);
+    updateClock(); // Initial call
+
+    // 1. Password Strength Logic
+    pass.addEventListener('input', () => {
+      let strength = 0;
+      const val = pass.value;
+      if(val.length >= 8) strength += 34;
+      if(/[0-9]/.test(val)) strength += 33;
+      if(/[!@#$%^&*]/.test(val)) strength += 33;
+      bar.style.width = strength + '%';
+
+      if(strength < 100) {
+        bar.style.background = 'var(--error)';
+        lockIcon.className = "fas fa-lock";
+        msg.innerText = "Firewall status: Weak Key";
+        btn.disabled = true; btn.classList.remove('active');
+      } else {
+        bar.style.background = 'var(--success)';
+        lockIcon.className = "fas fa-lock-open";
+        lockIcon.style.color = "var(--success)";
+        msg.innerText = "Firewall status: Breach-Proof";
+        msg.style.color = "var(--success)";
+        btn.disabled = false; btn.classList.add('active');
+      }
+    });
+
+    // 2. Auth Execution
+    document.getElementById('regForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      document.getElementById('sync-overlay').style.display = 'flex';
+
+      setTimeout(() => {
+        document.getElementById('sync-overlay').style.display = 'none';
+        document.getElementById('auth-page').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        
+        const name = document.getElementById('uName').value;
+        document.getElementById('welcome').innerText = "Operator: " + name;
+        
+        const table = document.getElementById('userTable');
+        table.innerHTML = `<tr class="new-row">
+            <td>${name}</td>
+            <td>Level 4</td>
+            <td style="color:var(--success)"><i class="fas fa-circle" style="font-size:8px"></i> ONLINE</td>
+        </tr>`;
+
+        triggerPopup("Access Tunnel Established");
+      }, 2000);
+    });
+
+    // 3. Vault Logic
+    function saveNote() {
+      const text = document.getElementById('noteArea').value;
+      if(text) {
+        const vault = document.getElementById('vaultList');
+        const time = new Date().toLocaleTimeString();
+        const entry = document.createElement('div');
+        entry.className = 'vault-item';
+        entry.innerHTML = `<span><i class="fas fa-file-code"></i> DOC_${Math.floor(Math.random()*9000)}</span> <span>${time}</span>`;
+        vault.prepend(entry);
+        
+        document.getElementById('noteArea').value = "";
+        triggerPopup("Data Sharded & Vaulted");
+      } else {
+        alert("Enter data before encryption.");
+      }
+    }
+
+    function triggerPopup(text) {
+      const popup = document.getElementById('successMsg');
+      document.getElementById('popupText').innerText = text;
+      popup.style.transform = 'translateX(0)';
+      setTimeout(() => { popup.style.transform = 'translateX(150%)'; }, 3000);
+    }
+  </script>
+</body>
+</html>
